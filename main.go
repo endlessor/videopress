@@ -59,5 +59,6 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		videopress.ConvertToWebm(part.FileName())
+		videopress.ConvertToMp4(part.FileName())
 	}
 }

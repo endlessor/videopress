@@ -10,6 +10,7 @@ import (
 
 func ConvertToWebm(filename string) (string, error) {
 	log.Print("Encoding ", filename, " to webm")
+
 	outFname := "out.webm"
 	cmd := exec.Command("ffmpeg",
 		"-i", filename,
@@ -33,5 +34,35 @@ func ConvertToWebm(filename string) (string, error) {
 		log.Fatal(err)
 	}
 	fmt.Printf("%s\n", out)
+	return "hello", nil
+}
+
+func ConvertToMp4(filename string) (string, error) {
+	log.Print("Encoding ", filename, " to mp4")
+	outFname := "out.mp4"
+	cmd := exec.Command("handbrake",
+		"-i", filename,
+		"-o", outFname,
+		"--encoder", "x264",
+		"--vb", "1800",
+		"--ab", "128",
+		"--two-pass",
+		"--optimize")
+
+	cmd.Dir = "uploads"
+
+	var outerr bytes.Buffer
+	cmd.Stderr = &outerr
+
+	//err := cmd.Run()
+	out, err := cmd.Output()
+	fmt.Printf("%s\n", outerr.String())
+
+	if err != nil {
+		//return "", err
+		log.Fatal(err)
+	}
+	fmt.Printf("%s\n", out)
+
 	return "hello", nil
 }
