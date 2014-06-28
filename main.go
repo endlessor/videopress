@@ -6,7 +6,8 @@ import (
 	"net/http"
 	"os"
 
-	"gihub.com/allenan/videopress/videopress"
+	"github.com/allenan/videopress/videopress"
+
 	"github.com/gorilla/mux"
 )
 
