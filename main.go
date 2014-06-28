@@ -1,10 +1,14 @@
 package main
 
 import (
-	"io"
-	"os"
+	"bytes"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
+	"os"
+	"os/exec"
+
 	"github.com/gorilla/mux"
 )
 
@@ -16,6 +20,34 @@ func main() {
 	http.Handle("/", router)
 	fmt.Println("Listening on localhost:8000")
 	http.ListenAndServe(":8000", nil)
+}
+
+func convertToWebm(filename string) (string, error) {
+	log.Print("Encoding ", filename, " to webm")
+	outFname := "out.webm"
+	cmd := exec.Command("ffmpeg",
+		"-i", filename,
+		"-c:v", "libvpx",
+		"-crf", "10",
+		"-b:v", "1M",
+		"-c:a", "libvorbis",
+		outFname)
+
+	cmd.Dir = "uploads"
+
+	var outerr bytes.Buffer
+	cmd.Stderr = &outerr
+
+	//err := cmd.Run()
+	out, err := cmd.Output()
+	fmt.Printf("%s\n", outerr.String())
+
+	if err != nil {
+		//return "", err
+		log.Fatal(err)
+	}
+	fmt.Printf("%s\n", out)
+	return "hello", nil
 }
 
 func uploadHandler(w http.ResponseWriter, r *http.Request) {
@@ -36,6 +68,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		if part.FileName() == "" {
 			continue
 		}
+
 		dst, err := os.Create("uploads/" + part.FileName())
 		defer dst.Close()
 
@@ -49,5 +82,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		convertToWebm(part.FileName())
 	}
+
 }
