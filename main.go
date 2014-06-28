@@ -30,6 +30,11 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//create uploads dir if it doesn't exist
+	if _, err := os.Stat("uploads"); os.IsNotExist(err) {
+		os.Mkdir("uploads", 0777)
+	}
+
 	for {
 		part, err := reader.NextPart()
 		if err == io.EOF {
