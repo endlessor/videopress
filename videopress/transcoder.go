@@ -2,16 +2,18 @@ package videopress
 
 import (
 	"bytes"
-	"fmt"
 	"log"
 
+	"os"
 	"os/exec"
 )
 
-func ConvertToWebm(filename string) (string, error) {
+func ConvertToWebm(jobid string, filename string) (string, error) {
+	makeDeliverDir(jobid)
+
 	log.Print("Encoding ", filename, " to webm")
 
-	outFname := "out.webm"
+	outFname := "deliver/out.webm"
 	cmd := exec.Command("ffmpeg",
 		"-i", filename,
 		"-c:v", "libvpx",
@@ -20,26 +22,29 @@ func ConvertToWebm(filename string) (string, error) {
 		"-c:a", "libvorbis",
 		outFname)
 
-	cmd.Dir = "uploads"
+	cmd.Dir = "uploads/" + jobid
 
 	var outerr bytes.Buffer
 	cmd.Stderr = &outerr
 
 	//err := cmd.Run()
-	out, err := cmd.Output()
-	fmt.Printf("%s\n", outerr.String())
+	//out, err := cmd.Output()
+	_, err := cmd.Output()
+	//fmt.Printf("%s\n", outerr.String())
 
 	if err != nil {
 		//return "", err
 		log.Fatal(err)
 	}
-	fmt.Printf("%s\n", out)
+	//fmt.Printf("%s\n", out)
+	log.Print("finished webm encode")
 	return "hello", nil
 }
 
-func ConvertToMp4(filename string) (string, error) {
+func ConvertToMp4(jobid string, filename string) (string, error) {
+	makeDeliverDir(jobid)
 	log.Print("Encoding ", filename, " to mp4")
-	outFname := "out.mp4"
+	outFname := "deliver/out.mp4"
 	cmd := exec.Command("handbrake",
 		"-i", filename,
 		"-o", outFname,
@@ -49,20 +54,33 @@ func ConvertToMp4(filename string) (string, error) {
 		"--two-pass",
 		"--optimize")
 
-	cmd.Dir = "uploads"
+	cmd.Dir = "uploads/" + jobid
 
 	var outerr bytes.Buffer
 	cmd.Stderr = &outerr
 
 	//err := cmd.Run()
-	out, err := cmd.Output()
-	fmt.Printf("%s\n", outerr.String())
+	//out, err := cmd.Output()
+	_, err := cmd.Output()
+	//fmt.Printf("%s\n", outerr.String())
 
 	if err != nil {
 		//return "", err
 		log.Fatal(err)
 	}
-	fmt.Printf("%s\n", out)
+	//fmt.Printf("%s\n", out)
+	log.Print("finished mp4 encode")
 
 	return "hello", nil
+}
+
+func makeDeliverDir(jobid string) {
+	//create deliver dir if it doesn't exist
+	if _, err := os.Stat(deliverPath(jobid)); os.IsNotExist(err) {
+		os.Mkdir(deliverPath(jobid), 0777)
+	}
+}
+
+func deliverPath(jobid string) string {
+	return "uploads/" + jobid + "/deliver"
 }
